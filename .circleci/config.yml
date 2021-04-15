@@ -190,7 +190,7 @@ jobs:
           command: |
             cd .circleci/ansible
             echo "[web]" >> inventory.txt
-            URLS=$(curl -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7)
+            URLS=$(curl -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
             echo $URLS >> inventory.txt
             cat inventort.txt
       - run:
