@@ -218,7 +218,7 @@ jobs:
           name: Send migration results to memstash
           command: |
           cd backend
-          if egrep "has been executed successfully" migrations.txt;
+          if egrep -q "has been executed successfully" migrations.txt;
           then
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
             --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
