@@ -113,11 +113,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: installing dependencies
-          command: |
-            cd frontend
-            npm install
-      - run:
           name: Analyzing the code
           command: |
             cd frontend
@@ -128,11 +123,6 @@ jobs:
       - image: circleci/node:18.3.0
     steps:
       - checkout
-      - run:
-          name: installing dependencies
-          command: |
-            cd backend
-            npm install
       - run:
           name: Analyzing the code
           command: |
