@@ -84,7 +84,7 @@ jobs:
           name: installing dependencies
           command: |
             cd frontend
-            npm install
+            npm install oauth-sign
       - run:
           name: Code Testing
           command: |
