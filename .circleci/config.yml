@@ -179,6 +179,8 @@ jobs:
       - checkout # Checkout code from git
       - add_ssh_keys:
           fingerprints: ["b5:a3:25:69:82:a8:f0:7f:16:93:9a:ff:73:b1:63:e2"] # Add ssh keys with fingerprint
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
