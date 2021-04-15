@@ -1,4 +1,5 @@
 version: 2.1
+
 orbs:
   slack: circleci/slack@4.4.0
 
@@ -55,7 +56,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-      - slack/status
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -76,7 +76,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slack/status
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -92,7 +91,6 @@ jobs:
           command: |
             cd frontend
             npm run test
-      - slack/status
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -108,7 +106,6 @@ jobs:
           command: |
             cd backend
             npm run test
-      - slack/status
   scan-frontend:
     docker:
       - image: circleci/node:13.3.0
@@ -119,7 +116,6 @@ jobs:
           command: |
             cd frontend
             npm audit --audit-level=critical --force
-      - slack/status
   scan-backend:
     docker:
       - image: circleci/node:13.3.0
@@ -130,7 +126,10 @@ jobs:
           command: |
             cd backend
             npm audit --audit-level=critical --force
-
+      - slack/notify:
+          channel: project
+          event: fail
+          template: basic_fail_1
 #   deploy-infrastructure:
 #     docker:
 #       # Docker image here that supports AWS CLI
