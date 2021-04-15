@@ -117,11 +117,11 @@ jobs:
         command: |
           cd frontend
           npm install
-      - run:
-         name: Analyzing the code
-         command: |
-            cd frontend
-            npm audit --audit-level=critical
+     - run:
+        name: Analyzing the code
+        command: |
+          cd frontend
+          npm audit --audit-level=critical
 
   scan-backend:
     docker:
