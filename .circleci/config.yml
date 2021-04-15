@@ -116,7 +116,7 @@ jobs:
           name: Analyzing the code
           command: |
             cd frontend
-            npm audit --audit-level=critical
+            npm audit --audit-level=critical --force
 
   scan-backend:
     docker:
@@ -127,7 +127,7 @@ jobs:
           name: Analyzing the code
           command: |
             cd backend
-            npm audit --audit-level=critical
+            npm audit --audit-level=critical --force
 
 #   deploy-infrastructure:
 #     docker:
