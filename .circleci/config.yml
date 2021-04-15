@@ -130,58 +130,64 @@ jobs:
           channel: project
           event: fail
           template: basic_fail_1
-#   deploy-infrastructure:
-#     docker:
-#       # Docker image here that supports AWS CLI
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Ensure back-end infrastructure exists
-#           command: |
-#             aws cloudformation deploy \
-#               --template-file .circleci/files/backend.yml \
-#               #--tags project=your-tag \
-#               # --stack-name "your back-end stack name with workflow id" \
-#               # --parameter-overrides ID="your workflow id"
-#               exit 1
-#       - run:
-#           name: Ensure front-end infrastructure exist
-#           command: |
-#             aws cloudformation deploy \
-#               --template-file .circleci/files/frontend.yml \
-#               #--tags project=your-tag \
-#               # --stack-name "your front-end stack name with workflow id" \
-#               # --parameter-overrides ID="your workflow id"
-#               exit 1
-#       - run:
-#           name: Add back-end ip to ansible inventory
-#           command: |
-#             # Your code here
-#             exit 1
-#       - persist_to_workspace:
-#           root: ~/
-#           paths:
-#             - project/.circleci/ansible/inventory.txt
-#       # Here's where you will add some code to rollback on failure
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli # Docker image here that supports AWS CLI
+    steps:
+      - checkout # Checkout code from git
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags project=backend \
+              --stack-name "udapeople-backend-${CIRCLE_FLOW_ID}" \
+              --parameter-overrides ID="{CIRCLE_FLOW_ID}"
+            URLS=$(aws ec2 describe-instances --region us-east-2 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}"  --output text)
+            echo "URLS=$URLS"
+            curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request PUT --data "" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID}
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=frontend \
+              --stack-name "udapeople-frontend-${CIRCLE_FLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_FLOW_ID}"
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            export backend_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
+              --output text >> .circleci/ansible/inventory.txt)
+            cat ./.circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure
 
-#   configure-infrastructure:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # Your code here
-#             exit 1
-#       - run:
-#           name: Configure server
-#           command: |
-#             # Your code here
-#             exit 1
-#       # Here's where you will add some code to rollback on failure
+  # configure-infrastructure:
+  #   docker:
+  #     - image: python:3.7-alpine3.11 # Docker image here that supports Ansible
+  #   steps:
+  #     - checkout # Checkout code from git
+  #     - add_ssh_keys:
+  #         fingerprints: ["b5:a3:25:69:82:a8:f0:7f:16:93:9a:ff:73:b1:63:e2"] # Add ssh keys with fingerprint
+  #     - attach workspace:
+  #         at: ~/
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           # Your code here
+  #           exit 1
+  #     - run:
+  #         name: Configure server
+  #         command: |
+  #           # Your code here
+  #           exit 1
+  # Here's where you will add some code to rollback on failure
 
 #   run-migrations:
 #     docker:
@@ -308,11 +314,11 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      # - deploy-infrastructure:
-      #     requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-      #     filters:
-      #       branches:
-      #         only: [test-feature-branch]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [test-feature-branch]
       # - configure-infrastructure:
       #     requires: [deploy-infrastructure]
       # - run-migrations:
