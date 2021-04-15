@@ -176,7 +176,7 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["b5:a3:25:69:82:a8:f0:7f:16:93:9a:ff:73:b1:63:e2"] # Add ssh keys with fingerprint
       - attach workspace:
-          at: ~/
+          at: /tmp/.circleci/ansible
       - run:
           name: Install dependencies
           command: |
@@ -194,7 +194,7 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible/
-            ansible-playbook -i inventory.txt main.yml
+            ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       # Here's where you will add some code to rollback on failure
 
 #   run-migrations:
