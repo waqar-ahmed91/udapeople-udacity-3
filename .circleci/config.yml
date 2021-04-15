@@ -134,7 +134,8 @@ jobs:
     docker:
       - image: amazon/aws-cli # Docker image here that supports AWS CLI
     steps:
-      - checkout # Checkout code from git
+      - checkout
+      - run: yum -y install tar gzip
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -143,9 +144,9 @@ jobs:
               --tags project=backend \
               --stack-name "udapeople-backend-${CIRCLE_FLOW_ID:0:7}" \
               --parameter-overrides ID="{CIRCLE_FLOW_ID:0:7}"
-            URLS=$(aws ec2 describe-instances --region us-west-2 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}"  --output text)
-            echo "URLS=$URLS"
-            curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request PUT --data "" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID}
+            # URLS=$(aws ec2 describe-instances --region us-west-2 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}"  --output text)
+            # echo "URLS=$URLS"
+            # curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request PUT --data "" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID}
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -157,15 +158,16 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            backend_ip=$(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text >> .circleci/ansible/inventory.txt)
-            cat ./.circleci/ansible/inventory.txt
+            aws ec2 describe-instances \
+              --filters 'Name=tag:project,Values=udapeople' \
+              --region us-west-2 \
+              --query "Reservations[*].Instances[*].PublicIpAddress" \
+              --output text >> .circleci/ansible/inventory.txt          
+            cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: .circleci/ansible
+          root: ~/
           paths:
-            - inventory.txt
+            - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
       # - revert-migrations
       # - destroy-environment
@@ -177,21 +179,13 @@ jobs:
       - checkout # Checkout code from git
       - add_ssh_keys:
           fingerprints: ["b5:a3:25:69:82:a8:f0:7f:16:93:9a:ff:73:b1:63:e2"] # Add ssh keys with fingerprint
-      # - attach workspace:
-      #     at: /tmp/.circleci/ansible
+      - attach workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
             apk add --update tar gzip ansible nodejs npm curl
             pip install awscli
-      - run:
-          name: Setup inventory file
-          command: |
-            cd .circleci/ansible
-            echo "[all]" >> inventory.txt
-            URL=$(curl -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request GET https://api.memstash.io/values/url_${CIRCLEFLOW_ID})
-            echo $URLS >> inventory.txt
-            cat inventory.txt
       - run:
           name: Configure server
           command: |
