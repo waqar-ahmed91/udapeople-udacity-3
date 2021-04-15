@@ -143,7 +143,7 @@ jobs:
               --tags project=backend \
               --stack-name "udapeople-backend-${CIRCLE_FLOW_ID:0:7}" \
               --parameter-overrides ID="{CIRCLE_FLOW_ID:0:7}"
-            URLS=$(aws ec2 describe-instances --region us-east-2 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}"  --output text)
+            URLS=$(aws ec2 describe-instances --region us-west-2 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}"  --output text)
             echo "URLS=$URLS"
             curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request PUT --data "" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID}
       - run:
@@ -167,8 +167,8 @@ jobs:
           paths:
             - inventory.txt
       # Here's where you will add some code to rollback on failure
-      - revert-migrations
-      - destroy-environment
+      # - revert-migrations
+      # - destroy-environment
 
   configure-infrastructure:
     docker:
@@ -198,8 +198,8 @@ jobs:
             cd .circleci/ansible/
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       # Here's where you will add some code to rollback on failure
-      - revert-migrations
-      - destroy-environment
+      # - revert-migrations
+      # - destroy-environment
 
 #   run-migrations:
 #     docker:
