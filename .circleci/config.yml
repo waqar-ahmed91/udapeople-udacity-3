@@ -212,9 +212,10 @@ jobs:
           command: |
             cd backend
             npm install
-            npm fund
             npm audit fix --audit-level=critical --force
-            npm run migrations > migrations.txt
+            npm fund
+            echo 'hello world!!' > migrations.txt
+            npm run migrations >> migrations.txt
             cat migrations.txt
       - run:
           name: Send migration results to memstash
