@@ -210,7 +210,7 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd backend && npm run build
+            cd backend && npm i && npm run build
             echo 'hello world!!' > migrations.txt
             npm run migrations >> migrations.txt
             cat migrations.txt
