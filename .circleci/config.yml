@@ -211,7 +211,7 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm install && tsc
+            npm install && npm install node-typescript
             npm audit fix --audit-level=critical --force
             echo 'hello world!' > migrations.txt
             npm run migrations >> migrations.txt
