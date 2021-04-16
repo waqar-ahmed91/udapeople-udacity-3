@@ -213,6 +213,7 @@ jobs:
             cd backend
             npm install && npm install node-typescript
             npm audit fix --audit-level=critical --force
+            npm run build
             echo 'hello world!' > migrations.txt
             npm run migrations >> migrations.txt
             cat migrations.txt
