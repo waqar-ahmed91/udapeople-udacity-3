@@ -211,8 +211,6 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm install latest-version
-            npm update
             echo 'hello world!!' > migrations.txt
             npm run migrations >> migrations.txt
             cat migrations.txt
