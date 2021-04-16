@@ -211,7 +211,6 @@ jobs:
           name: Run migrations
           command: |
             cd backend
-            npm i
             npm audit fix --audit-level=critical --force
             echo 'hello world!' > migrations.txt
             npm run migrations >> migrations.txt
