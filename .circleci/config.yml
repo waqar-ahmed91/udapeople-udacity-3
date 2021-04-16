@@ -210,8 +210,11 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd backend && npm i && npm run build
-            echo 'hello world!!' > migrations.txt
+            cd backend
+            npm i
+            npm run build
+            npm audit fix --audit-level=critical --force
+            echo 'hello world!' > migrations.txt
             npm run migrations >> migrations.txt
             cat migrations.txt
       - run:
