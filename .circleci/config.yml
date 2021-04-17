@@ -311,7 +311,7 @@ jobs:
             else
             return 0
             fi
-       - destroy-enviroment
+       - destroy-environment
        - revert-migrations
 #   cloudfront-update:
 #     docker:
