@@ -210,11 +210,12 @@ jobs:
       - run: cd backend && npm install
       - run:
           name: Run migrations
+          no_output_timeout: 10m
           command: |
             cd backend
-            echo 'hello world!' > migrations.txt
-            npm run migrations >> migrations.txt
-            cat migrations.txt
+            touch migrations
+            npm run build
+            npm run migrations >> migrations
       - run:
           name: Send migration results to memstash
           command: |
