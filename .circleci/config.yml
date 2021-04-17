@@ -207,13 +207,11 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout # Checkout code from git
+      - run: cd backend && npm install
       - run:
           name: Run migrations
           command: |
             cd backend
-            npm install
-            npm audit fix --audit-level=critical --force
-            npm run build
             echo 'hello world!' > migrations.txt
             npm run migrations >> migrations.txt
             cat migrations.txt
@@ -223,11 +221,11 @@ jobs:
             cd backend
             if egrep "has been executed successfully." migrations.txt;
             then
-              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+              --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
             fi
-            SUCCESS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
-            --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
+            SUCCESS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" \
+            --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
             echo "Success value sent to memstash: $SUCCESS"
   #       # Here's where you will add some code to rollback on failure
   deploy-frontend:
