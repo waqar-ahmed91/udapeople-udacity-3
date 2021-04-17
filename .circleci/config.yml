@@ -215,7 +215,7 @@ jobs:
             cd backend
             touch migrations
             npm run build
-            npm run migrations >> migrations
+            npm run migrations > migrations
       - run:
           name: Send migration results to memstash
           command: |
