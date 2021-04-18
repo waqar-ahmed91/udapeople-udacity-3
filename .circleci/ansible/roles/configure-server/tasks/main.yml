@@ -1,41 +1,22 @@
----
-- name: "update apt packages."
-  become: yes
-  apt:
-    update_cache: yes
-
-- name: "upgrade packages"
-  become: yes
-  apt:
-    upgrade: yes
-
-- name: "remove dependencies that are no longer required"
-  become: yes
-  apt:
-    autoremove: yes
-
-- name: "install nodejs and npm"
-  become: yes
-  apt:
-    name: ["nodejs", "npm"]
-    state: latest
-    update_cache: yes
-
-- name: "install n"
-  become: yes
-  npm:
-    name: n
-    global: yes
-    production: yes
-
-- name: "install nodejs 13.8.0"
-  become: yes
-  shell: n 13.8.0
-
-- name: "install pm2"
-  become: yes
+- name: "install node 12.X"
+  shell: |
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    sudo apt -y upgrade
+    sudo apt install -y nodejs
+- name: "install pm2 by npm"
+  become: true
   npm:
     name: pm2
     global: yes
     production: yes
     state: present
+
+- name: "copy files from CircleCI to server"
+  copy:
+    src: /root/project/backend
+    dest: /home/ubuntu
+
+- name: "install package dependencies"
+  shell: |
+    cd /home/ubuntu/backend    
+    npm install
