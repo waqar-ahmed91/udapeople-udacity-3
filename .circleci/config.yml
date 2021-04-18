@@ -225,14 +225,17 @@ jobs:
           name: Send migration results to memstash
           command: |
             cd backend
-            if grep -q "has been executed successfully." migrations;
+            if grep -q "has been executed successfully." migrations.txt;
             then
-              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-              --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+              curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" \
+              --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            else
+              curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" \
+              --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
             fi
-            SUCCESS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
-            --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
-            echo "Success value sent to memstash: $SUCCESS"
+            SUCCESS=$(curl -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" \
+            --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            echo "Success value sent to memstash: ${SUCCESS}"
   #       # Here's where you will add some code to rollback on failure
   deploy-frontend:
     docker:
@@ -242,19 +245,24 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash - #
             yum -y install nodejs
             yum -y install tar gzip
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances \
+            cd frontend
+            BACKEND_IP=$(aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
             --output text)
             echo $BACKEND_IP > ./.circleci/ansible/backendip
-            cd frontend
+            touch .env
             export API_URL="http://${BACKEND_IP}:3030"
+            export 
+            echo "${API_URL}" >> .env
+            cat ~/project/frontend/.env
             echo "${API_URL}"
       - run:
           name: Deploy frontend objects
@@ -263,6 +271,7 @@ jobs:
             npm install webpack-dev-server -g
             npm install
             npm run build
+            npm audit fix --audit-level=critical --force
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # Here's where you will add some code to rollback on failure
 
@@ -306,6 +315,9 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
+            export API_URL=http://$BACKEND_URL:3030
+            echo $API_URL >> frontend/.env
+            echo $API_URL
       - run:
           name: Backend smoke test.
           command: |
