@@ -187,6 +187,7 @@ jobs:
           at: ~/
       - run:
           name: Install dependencies
+          working_directory: ./.circleci/ansible
           command: |
             apk add --update tar gzip ansible nodejs npm curl
             pip install awscli
@@ -200,12 +201,12 @@ jobs:
             cat inventory.txt
       - run:
           name: Configure server
+          working_directory: ./.circleci/ansible
           command: |
-            cd .circleci/ansible/
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure
-      # - revert-migrations
-      # - destroy-environment
+      - revert-migrations
+      - destroy-environment
 
   run-migrations:
     docker:
