@@ -202,6 +202,7 @@ jobs:
       - run:
           name: Configure server
           working_directory: ./.circleci/ansible
+          no_output_timeout: 30m
           command: |
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure
