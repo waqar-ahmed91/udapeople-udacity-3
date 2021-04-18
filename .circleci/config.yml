@@ -225,7 +225,7 @@ jobs:
           name: Send migration results to memstash
           command: |
             cd backend
-            if grep -q "has been executed successfully." migrations.txt;
+            if grep -q "has been executed successfully." migrations;
             then
               curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" \
               --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
@@ -257,7 +257,6 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
             --output text)
-            echo $BACKEND_IP > ./.circleci/ansible/backendip
             touch .env
             export API_URL="http://${BACKEND_IP}:3030"
             export 
