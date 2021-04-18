@@ -248,14 +248,16 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP=$(curl -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7})
+            BACKEND_IP=$(curl -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID})
+            echo $BACKEND_IP > ./.circleci/ansible/backendip
+            cd frontend
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
           name: Deploy frontend objects
           command: |
-            npm install webpack-dev-server -g
             cd frontend
+            npm install webpack-dev-server -g
             npm install
             npm run build
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
