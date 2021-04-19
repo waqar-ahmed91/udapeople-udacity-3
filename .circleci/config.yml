@@ -253,14 +253,19 @@ jobs:
           name: Get backend url
           command: |
             cd frontend
-            BACKEND_IP=$(aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --output text)
+
+            BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            BACKENDDNS=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+
+            # BACKEND_IP=$(aws ec2 describe-instances \
+            # --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            # --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            # --output text)
             touch .env
             export API_URL="http://${BACKEND_IP}:3030"
-            export 
+            export API_DNS="http://${BACKENDDNS}:3030" 
             echo "${API_URL}" >> .env
+            echo ".env"
             cat ~/project/frontend/.env
             echo "${API_URL}"
       - run:
@@ -271,6 +276,7 @@ jobs:
             npm install
             npm run build
             npm audit fix --audit-level=critical --force
+            cat ~/project/frontend/.env
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # Here's where you will add some code to rollback on failure
 
@@ -310,13 +316,28 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export BACKEND_URL=$(aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --output text)
-            export API_URL=http://$BACKEND_URL:3030
-            echo $API_URL >> frontend/.env
-            echo $API_URL
+            # export BACKEND_URL=$(aws ec2 describe-instances \
+            #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            #   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            #   --output text)
+            # export API_URL=http://$BACKEND_URL:3030
+            # echo $API_URL >> frontend/.env
+            # echo $API_URL
+            cd ~/project/backend
+            touch .env
+            export BACKEND_URL=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            export BACKENDDNS=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+
+            echo "BACKEND_URL: ${BACKEND_URL}"
+            echo "BACKENDNS: ${BACKENDDNS}"
+            echo "BACKEND_URL: ${API_URL}"
+
+            pwd
+            ls -la
+            cat ~/project/backend/.env
+
+            echo "http://${BACKEND_URL}:3030"
+            curl "http://${BACKEND_URL}:3030/api/status"
       - run:
           name: Backend smoke test.
           command: |
@@ -329,13 +350,15 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-us-west-2.amazonaws.com" 
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com" 
             echo $URL
             if curl -s ${URL} | grep "Welcome"
             then
-            return 1
-            else
+            echo "Success"
             return 0
+            else
+            echo "Fail"
+            return 1
             fi
 
       - destroy-environment
