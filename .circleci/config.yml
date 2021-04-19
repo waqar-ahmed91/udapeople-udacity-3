@@ -353,17 +353,17 @@ jobs:
 
             # echo "http://${BACKEND_URL}:3030"
             # curl "http://${BACKEND_URL}:3030/api/status"
-            # export BACKEND_IP=$(aws ec2 describe-instances \
-            # --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            # --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            # --output text)
-            # echo "${BACKEND_IP}"
-            # curl "http://${BACKEND_IP}:3030/api/status"
-            # curl -s "http://${BACKEND_IP}:3030/api/status"
-            cd .circleci/ansible
-            BACKEND_IP=$(cat backend_ip)
+            export BACKEND_IP=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --output text)
             echo "${BACKEND_IP}"
             curl "http://${BACKEND_IP}:3030/api/status"
+            # curl -s "http://${BACKEND_IP}:3030/api/status"
+            # cd .circleci/ansible
+            # BACKEND_IP=$(cat backend_ip)
+            # echo "${BACKEND_IP}"
+            # curl "http://${BACKEND_IP}:3030/api/status"
       - run:
           name: Frontend smoke test.
           command: |
