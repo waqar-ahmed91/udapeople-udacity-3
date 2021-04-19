@@ -347,7 +347,7 @@ jobs:
             --output text)
             echo "${BACKEND_IP}"
             # curl "http://${BACKEND_IP}:3030/api/status"
-            curl -s "https://${BACKEND_IP}:3030/api/status"
+            # curl -s "https://${BACKEND_IP}:3030/api/status"
       - run:
           name: Frontend smoke test.
           command: |
