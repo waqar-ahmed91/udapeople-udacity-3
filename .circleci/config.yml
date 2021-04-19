@@ -29,7 +29,7 @@ commands:
           when: on_fail
           command: |
             SUCCESS=$(curl -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
-            echo "SUCCESS"
+            echo $SUCCESS
             if(( SUCCESS == 1 )); 
             then
               cd /backend
@@ -147,18 +147,18 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --tags project=backend-tag \
-              --stack-name "backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --stack-name backend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" 
-            URLS=$(aws ec2 describe-instances --region us-west-2 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  --output text)
-            echo "URLS=$URLS"
-            curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request PUT --data "" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7}
+            BACKEND_IP=$(aws ec2 describe-instances --region us-west-2 --query "Reservations[*].Instances[*].PublicIpAddress"  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  --output text)
+            echo $BACKEND_IP
+            curl -H "Content-Type: text/plain" -H "token: 0d6d031b-b5cc-4ad7-9bfd-2233791a913d" --request PUT --data "BACKEND_IP" https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --tags project=frontend-tag \
-              --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --stack-name frontend-${CIRCLE_WORKFLOW_ID:0:7} \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Add back-end ip to ansible inventory
@@ -347,13 +347,7 @@ jobs:
             --output text)
             echo "${BACKEND_IP}"
             # curl "http://${BACKEND_IP}:3030/api/status"
-            if curl -s https://${BACKEND_IP}:3030/api/status | grep '"status":"ok"'
-            then
-            return 0
-            else
-            echo "backend test failed"
-            return 1
-            fi
+            curl -s "https://${BACKEND_IP}:3030/api/status"
       - run:
           name: Frontend smoke test.
           command: |
@@ -367,9 +361,6 @@ jobs:
             echo "Fail"
             return 1
             fi
-
-      - destroy-environment
-      - revert-migrations
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
