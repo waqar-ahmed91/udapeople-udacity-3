@@ -1,5 +1,5 @@
 [URL01] https://github.com/waqar-ahmed91/udapeople-udacity-3
-[URL02] http://udapeople-b9715c3.s3-website-us-west-2.amazonaws.com
-[URL03]	d1bncl914x6cxo.cloudfront.net
-[URL04]	ec2-54-212-218-160.us-west-2.compute.amazonaws.com
-[URL05] http://ec2-54-212-218-160.us-west-2.compute.amazonaws.com:9090
+[URL02] http://udapeople-820985c.s3-website-us-west-2.amazonaws.com
+[URL03]	d2knb6b20falmj.cloudfront.net
+[URL04]	http://ec2-52-41-165-143.us-west-2.compute.amazonaws.com:3030/api/status
+[URL05]
