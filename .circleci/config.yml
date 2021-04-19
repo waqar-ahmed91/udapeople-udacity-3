@@ -309,13 +309,15 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run:
+         name: add tar
+         command: yum install -y tar gzip
       - attach_workspace:
           at: ~/
       - run:
           name: Install dependencies
           command: |
             apk add --update curl
-            pip install awscli
       - run:
           name: Get backend url and backend smoke test
           command: |
