@@ -240,18 +240,14 @@ jobs:
   #       # Here's where you will add some code to rollback on failure
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install dependencies
           command: |
-            cd frontend
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash - #
-            yum -y install nodejs
-            yum -y install tar gzip
+            apk add --update tar gzip ansible nodejs npm curl
+            pip install awscli
       - run:
           name: Get backend url
           command: |
@@ -276,15 +272,16 @@ jobs:
             --output text)
             echo $BACKEND_IP > .circleci/ansible/backend_ip
             export API_URL="http://${BACKEND_IP}:3030"
-            echo "API_URL=$API_URL" >> frontend/.env
+            echo "API_URL=$API_URL" > frontend/.env
             echo "${API_URL}"
       - run:
           name: Deploy frontend objects
-          working_directory: ./frontend
           no_output_timeout: 30m
           command: |
             npm install webpack-dev-server -g
+            cd frontend
             npm i
+            npm install oauth2
             npm run build
             npm audit fix --audit-level=critical --force
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
