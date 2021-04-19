@@ -309,10 +309,13 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
             apk add --update curl
+            pip install awscli
       - run:
           name: Get backend url
           command: |
@@ -323,25 +326,31 @@ jobs:
             # export API_URL=http://$BACKEND_URL:3030
             # echo $API_URL >> frontend/.env
             # echo $API_URL
-            cd ~/project/backend
-            touch .env
-            export BACKEND_URL=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
-            export BACKENDDNS=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            # cd ~/project/backend
+            # touch .env
+            # export BACKEND_URL=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
+            # export BACKENDDNS=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicDnsName' --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
 
-            echo "BACKEND_URL: ${BACKEND_URL}"
-            echo "BACKENDNS: ${BACKENDDNS}"
-            echo "BACKEND_URL: ${API_URL}"
+            # echo "BACKEND_URL: ${BACKEND_URL}"
+            # echo "BACKENDNS: ${BACKENDDNS}"
+            # echo "BACKEND_URL: ${API_URL}"
 
-            pwd
-            ls -la
-            cat ~/project/backend/.env
+            # pwd
+            # ls -la
+            # cat ~/project/backend/.env
 
-            echo "http://${BACKEND_URL}:3030"
-            curl "http://${BACKEND_URL}:3030/api/status"
+            # echo "http://${BACKEND_URL}:3030"
+            # curl "http://${BACKEND_URL}:3030/api/status"
+            BACKEND_IP=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --output text)
+            echo "${BACKEND_IP}"
+            curl "http://${BACKEND_IP}:3030/api/status"
       - run:
           name: Backend smoke test.
           command: |
-            if curl -s https://${BACKEND_URL}:3030/api/status
+            if curl -s https://${BACKEND_IP}:3030/api/status
             then
             return 1
             else
